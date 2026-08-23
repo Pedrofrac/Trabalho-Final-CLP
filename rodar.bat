@@ -10,10 +10,10 @@ cd src
 echo [1/3] Limpando arquivos antigos...
 del /S /Q *.class >nul 2>&1
 
-:: 2. Compila todo o projeto com a biblioteca AbsoluteLayout
+:: 2. Compila todo o projeto com a biblioteca AbsoluteLayout forçando o Java 23
 echo [2/3] Compilando arquivos do projeto...
-javac -cp "..\lib\AbsoluteLayout.jar;." screens\ladder\*.java
-javac -cp "..\lib\AbsoluteLayout.jar;." SimuladorClp.java
+javac --release 23 -cp "..\lib\AbsoluteLayout.jar;." screens\ladder\*.java
+javac --release 23 -cp "..\lib\AbsoluteLayout.jar;." SimuladorClp.java
 
 :: 3. Executa o simulador
 echo [3/3] Iniciando o Simulador...
