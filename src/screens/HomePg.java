@@ -1,5 +1,7 @@
 package screens;
 
+import screens.ladder.LadderCanvas;
+
 import screens.scenes.IScenePanel;
 import screens.scenes.BatchSimulationScenePanel;
 import screens.scenes.DefaultScenePanel;
@@ -37,10 +39,12 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import screens.scenes.ScenesEnum;
 import screens.scenes.InputEventListener;
-import screens.scenes.TrafficLightScenePanel; // Importar o novo painel
+import screens.scenes.TrafficLightScenePanel;
 
 public final class HomePg extends javax.swing.JFrame {
 
+    private javax.swing.JTabbedPane tabbedPane;
+    private screens.ladder.LadderCanvas ladderCanvas;   
     private static final int CYCLE_DELAY_MS = 100;
 
     private final HomePageController controller;
@@ -49,6 +53,7 @@ public final class HomePg extends javax.swing.JFrame {
 
     private ListaDeVariaveisPg telaDataTable;
     private boolean updating = false;
+    private boolean isUpdatingTabs = false;
 
     private IScenePanel currentScenePanel;
     private ScenesEnum currentScene = ScenesEnum.DEFAULT;
@@ -117,14 +122,87 @@ public final class HomePg extends javax.swing.JFrame {
         sceneContainer.revalidate();
         sceneContainer.repaint();
 
-        this.setResizable(false);
-
         telaDataTable = new ListaDeVariaveisPg(HomePageModel.getInputs(), HomePageModel.getOutputs());
 
         pack();
 
         // Atualiza entradas e saídas na tela
         updateSceneUI();
+        
+        // --- INÍCIO DA INJEÇÃO DO LADDER VISUAL ---
+        tabbedPane = new javax.swing.JTabbedPane();
+        tabbedPane.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        ladderCanvas = new screens.ladder.LadderCanvas();
+        Color_Camp.removeAll();
+        Color_Camp.setLayout(new java.awt.BorderLayout());
+        
+        tabbedPane.addTab("Diagrama Ladder (Visual)", ladderCanvas);
+        
+        scrollCodigoCamp.setOpaque(true);
+        scrollCodigoCamp.getViewport().setOpaque(true);
+        scrollCodigoCamp.setBackground(new java.awt.Color(0, 102, 204));
+        scrollCodigoCamp.getViewport().setBackground(new java.awt.Color(0, 102, 204));
+        tabbedPane.addTab("Lista de Instruções (IL)", scrollCodigoCamp);
+
+        tabbedPane.addChangeListener(e -> {
+            if (isUpdatingTabs) return;
+            isUpdatingTabs = true;
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                try {
+                    if (tabbedPane.getSelectedIndex() == 1) {
+                        Codigo_Camp.setText(ladderCanvas.compileAllToIL());
+                    } else if (tabbedPane.getSelectedIndex() == 0) {
+                        ladderCanvas.loadFromIL(Codigo_Camp.getText());
+                    }
+                } finally {
+                    isUpdatingTabs = false;
+                }
+            });
+        });
+        
+        Color_Camp.add(tabbedPane, java.awt.BorderLayout.CENTER);
+        Color_Camp.revalidate();
+        Color_Camp.repaint();
+        // --- FIM DA INJEÇÃO ---
+
+        // --- INÍCIO DO AJUSTE DE TELA (ANTI-BUG DO NETBEANS) ---
+        this.setResizable(true);
+
+        javax.swing.JButton btnAmpliar = new javax.swing.JButton("↔ Ampliar Tela");
+        btnAmpliar.setBounds(450, 16, 120, 25); 
+        this.getContentPane().add(btnAmpliar);
+        this.getContentPane().setComponentZOrder(btnAmpliar, 0);
+        
+        btnAmpliar.addActionListener(e -> {
+            if (this.getWidth() < 1200) {
+                this.setSize(1366, this.getHeight());
+                btnAmpliar.setText("→ Encolher Tela");
+            } else {
+                this.setSize(1024, this.getHeight());
+                btnAmpliar.setText("↔ Ampliar Tela");
+            }
+        });
+
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                int janelaLargura = getWidth();
+                int janelaAltura = getHeight();
+
+                int inicioX = Color_Camp.getX();
+                int inicioY = Color_Camp.getY();
+
+                int novaLargura = janelaLargura - inicioX - 25;
+                int novaAltura = janelaAltura - inicioY - 45;
+
+                Color_Camp.setSize(novaLargura, novaAltura);
+                Color_Camp.setPreferredSize(new java.awt.Dimension(novaLargura, novaAltura));
+                
+                Color_Camp.revalidate();
+                Color_Camp.repaint();
+            }
+        });
+        // --- FIM DO AJUSTE DE TELA ---
     }
 
     private void handleInputButtonPressed(String inputKey, java.awt.event.MouseEvent evt) {
@@ -155,7 +233,6 @@ public final class HomePg extends javax.swing.JFrame {
     }
 
     private void handleInputButtonReleased(String inputKey, java.awt.event.MouseEvent evt) {
-
         if (evt.getButton() != java.awt.event.MouseEvent.BUTTON1) {
             return;
         }
@@ -181,7 +258,6 @@ public final class HomePg extends javax.swing.JFrame {
     }
 
     private void setCurrentScene(ScenesEnum scene) {
-
         if (scene == null) {
             throw new IllegalArgumentException("scene cannot be null");
         }
@@ -192,12 +268,10 @@ public final class HomePg extends javax.swing.JFrame {
 
         currentScene = scene;
 
-        // Remove o painel anterior
         if (currentScenePanel != null) {
             sceneContainer.remove((JPanel) currentScenePanel);
         }
 
-        // Seleciona o novo painel
         switch (scene) {
             case DEFAULT -> {
                 currentScenePanel = new DefaultScenePanel();
@@ -207,18 +281,14 @@ public final class HomePg extends javax.swing.JFrame {
                 batchPanel.setOnCriticalFailureCallback(() -> pauseBt.doClick());
                 currentScenePanel = batchPanel;
             }
-            // --- ADICIONE ESTE BLOCO ---
             case TRAFFIC_LIGHT -> {
                 currentScenePanel = new TrafficLightScenePanel();
             }
-            // ---------------------------
         }
 
-        // Inicializa inputs e adiciona o painel na tela
         currentScenePanel.initInputs(HomePageModel.getInputsType(), HomePageModel.getInputs());
 
         var currentSceneJPanel = (JPanel) currentScenePanel;
-
         currentScenePanel.setInputListener(sceneInputEventListener);
 
         sceneContainer.add(currentSceneJPanel, BorderLayout.CENTER);
@@ -248,6 +318,7 @@ public final class HomePg extends javax.swing.JFrame {
 
         if (mode == ExecutionMode.IDLE || mode == ExecutionMode.STOPPED) {
             currentScenePanel.stop();
+            LadderCanvas.setSimulatingGlobal(false);
         }
 
         boolean isRunningMode = mode == ExecutionMode.RUNNING;
@@ -263,7 +334,6 @@ public final class HomePg extends javax.swing.JFrame {
     }
 
     public void updateMemoryVariables() {
-
         List<MemoryVariable> tVariables = new ArrayList<>();
         List<MemoryVariable> cVariables = new ArrayList<>();
 
@@ -282,7 +352,6 @@ public final class HomePg extends javax.swing.JFrame {
                     }
                 }
             }
-
         }
 
         HomePageController.updateTimerLabels(tVariables,
@@ -305,6 +374,7 @@ public final class HomePg extends javax.swing.JFrame {
 
     public static void showErrorMessage(String message) {
         HomePageModel.setMode(ExecutionMode.IDLE);
+        LadderCanvas.setSimulatingGlobal(false);
         JOptionPane.showMessageDialog(null, message);
     }
 
@@ -321,16 +391,11 @@ public final class HomePg extends javax.swing.JFrame {
                 Logger.getLogger(HomePg.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
-        // System.out.println("Lista de linhas: " + lineList);
         return lineList;
     }
 
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated
-    // <editor-fold defaultstate="collapsed" desc="Generated
-    // <editor-fold defaultstate="collapsed" desc="Generated
-    // Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jMenu1 = new javax.swing.JMenu();
@@ -745,7 +810,7 @@ public final class HomePg extends javax.swing.JFrame {
         Color_Camp.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         Codigo_Camp.setColumns(20);
-        Codigo_Camp.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        Codigo_Camp.setFont(new java.awt.Font("Segoe UI", 1, 14));
         Codigo_Camp.setForeground(new java.awt.Color(255, 255, 255));
         Codigo_Camp.setRows(5);
         Codigo_Camp.setLineWrap(true);
@@ -766,7 +831,7 @@ public final class HomePg extends javax.swing.JFrame {
         simulationsComboBox.setSelectedItem(ScenesEnum.DEFAULT);
         simulationsComboBox.setMaximumSize(new java.awt.Dimension(150, 50));
         simulationsComboBox.setMinimumSize(new java.awt.Dimension(150, 50));
-        simulationsComboBox.setName("simulations_combo_box"); // NOI18N
+        simulationsComboBox.setName("simulations_combo_box");
         simulationsComboBox.setOpaque(true);
         simulationsComboBox.setPreferredSize(new java.awt.Dimension(150, 50));
         simulationsComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -776,11 +841,11 @@ public final class HomePg extends javax.swing.JFrame {
         });
         jPanel3.add(simulationsComboBox);
 
-        startBt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/start.png"))); // NOI18N
+        startBt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/start.png")));
         startBt.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         startBt.setMaximumSize(new java.awt.Dimension(50, 50));
         startBt.setMinimumSize(new java.awt.Dimension(50, 50));
-        startBt.setName("start_bt"); // NOI18N
+        startBt.setName("start_bt");
         startBt.setPreferredSize(new java.awt.Dimension(50, 50));
         startBt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -789,11 +854,11 @@ public final class HomePg extends javax.swing.JFrame {
         });
         jPanel3.add(startBt);
 
-        pauseBt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/pause.png"))); // NOI18N
+        pauseBt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/pause.png")));
         pauseBt.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         pauseBt.setMaximumSize(new java.awt.Dimension(50, 50));
         pauseBt.setMinimumSize(new java.awt.Dimension(50, 50));
-        pauseBt.setName("pause_br"); // NOI18N
+        pauseBt.setName("pause_br");
         pauseBt.setPreferredSize(new java.awt.Dimension(50, 50));
         pauseBt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -802,11 +867,11 @@ public final class HomePg extends javax.swing.JFrame {
         });
         jPanel3.add(pauseBt);
 
-        refreshBt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/refresh.png"))); // NOI18N
+        refreshBt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/refresh.png")));
         refreshBt.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         refreshBt.setMaximumSize(new java.awt.Dimension(50, 50));
         refreshBt.setMinimumSize(new java.awt.Dimension(50, 50));
-        refreshBt.setName("refresh_bt"); // NOI18N
+        refreshBt.setName("refresh_bt");
         refreshBt.setPreferredSize(new java.awt.Dimension(50, 50));
         refreshBt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -815,11 +880,11 @@ public final class HomePg extends javax.swing.JFrame {
         });
         jPanel3.add(refreshBt);
 
-        dataTableBt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/menu.png"))); // NOI18N
+        dataTableBt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/menu.png")));
         dataTableBt.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         dataTableBt.setMaximumSize(new java.awt.Dimension(50, 50));
         dataTableBt.setMinimumSize(new java.awt.Dimension(50, 50));
-        dataTableBt.setName("refresh_bt"); // NOI18N
+        dataTableBt.setName("refresh_bt");
         dataTableBt.setPreferredSize(new java.awt.Dimension(50, 50));
         dataTableBt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -896,16 +961,16 @@ public final class HomePg extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void Sobre_BTActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_Sobre_BTActionPerformed
+    private void Sobre_BTActionPerformed(java.awt.event.ActionEvent evt) {
         SobrePopup.mostrarSobre();
-    }// GEN-LAST:event_Sobre_BTActionPerformed
+    }
 
     private void Help_BTActionPerformed(java.awt.event.ActionEvent evt) {
         HelpPopUp.showHelp();
     }
 
-    private void Editar_BTActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_Editar_BTActionPerformed
-        if (Editar_BT.getItemAt(1) == Editar_BT.getSelectedItem().toString()) {
+    private void Editar_BTActionPerformed(java.awt.event.ActionEvent evt) {
+        if (Editar_BT.getItemAt(1).equals(Editar_BT.getSelectedItem().toString())) {
             Editar_BT.setSelectedIndex(0);
             HomePageModel.setColor(HomePageModel.getColor() + 1);
             if (HomePageModel.getColor() >= 5) {
@@ -913,45 +978,49 @@ public final class HomePg extends javax.swing.JFrame {
             }
             setaCores();
         }
-        if (Editar_BT.getItemAt(2) == Editar_BT.getSelectedItem().toString()) {
+        if (Editar_BT.getItemAt(2).equals(Editar_BT.getSelectedItem().toString())) {
             Editar_BT.setSelectedIndex(0);
             Language.setLingua();
             setaLanguage();
         }
+    }
 
-    }// GEN-LAST:event_Editar_BTActionPerformed
-
-    private void Arquivar_BTActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_Arquivar_BTActionPerformed
+    private void Arquivar_BTActionPerformed(java.awt.event.ActionEvent evt) {
         HomePageController.handleFileArchiveAction(Arquivar_BT, Codigo_Camp, this.updating, this);
-    }// GEN-LAST:event_Arquivar_BTActionPerformed
+    }
 
-    private void refreshBtActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_refreshBtActionPerformed
+    private void refreshBtActionPerformed(java.awt.event.ActionEvent evt) {
+        LadderCanvas.setSimulatingGlobal(false);
         controller.handleRefreshAction();
         currentScenePanel.resetUIState();
-    }// GEN-LAST:event_refreshBtActionPerformed
+    }
 
-    private void simulationsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_simulationsComboBoxActionPerformed
+    private void simulationsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         ScenesEnum selectedScene = (ScenesEnum) simulationsComboBox.getSelectedItem();
-
         setCurrentScene(selectedScene);
-    }// GEN-LAST:event_simulationsComboBoxActionPerformed
+    }
 
-    private void startBtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startBtActionPerformed
+    private void startBtActionPerformed(java.awt.event.ActionEvent evt) {
         if (!HomePageModel.isRunning()) {
-            
+            if (tabbedPane != null && tabbedPane.getSelectedIndex() == 0) {
+                Codigo_Camp.setText(ladderCanvas.compileAllToIL());
+            }
+
             // 1. Limpa a memória lógica (Backend)
             HomePageModel.setMemoryVariables(new HashMap<>());
             
             // 2. Reseta as saídas (Q)
             HomePageModel.setOutputs(OutputActions.resetOutputs(HomePageModel.getOutputs()));
             
-            // 3. LIMPEZA VISUAL (O SEGREDO ESTÁ AQUI)
-            clearMemoryLabels(); // <--- Limpa os números antigos da tela
+            // 3. Limpeza visual
+            clearMemoryLabels();
             
-            // 4. Atualiza a tela (vai mostrar tudo vazio inicialmente)
+            // 4. Atualiza a tela
             updateMemoryVariables(); 
             updateSceneUI();
 
+            // Ativa simulação (faz os [+] sumirem imediatamente)
+            LadderCanvas.setSimulatingGlobal(true);
             HomePageModel.setMode(ExecutionMode.RUNNING);
 
             Timer timer = new Timer(CYCLE_DELAY_MS, e -> controller.runCycle(e));
@@ -960,29 +1029,31 @@ public final class HomePg extends javax.swing.JFrame {
 
         } else {
             HomePageModel.setMode(ExecutionMode.STOPPED);
+            LadderCanvas.setSimulatingGlobal(false);
             controller.stopTimers();
             updateMemoryVariables();
             updateMode();
         }
-    }//GEN-LAST:event_startBtActionPerformed
+    }
 
     public void clickPauseButton() {
         pauseBt.doClick();
     }
 
-    public void pauseBtActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_pauseBtActionPerformed
+    public void pauseBtActionPerformed(java.awt.event.ActionEvent evt) {
         HomePageModel.setMode(ExecutionMode.IDLE);
+        LadderCanvas.setSimulatingGlobal(false);
         controller.stopTimers();
         controller.resetTimers();
         updateMemoryVariables();
         updateMode();
-    }// GEN-LAST:event_pauseBtActionPerformed
+    }
 
-    private void dataTableBtActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_dataTableBtActionPerformed
+    private void dataTableBtActionPerformed(java.awt.event.ActionEvent evt) {
         telaDataTable.setVisible(true);
         telaDataTable.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         telaDataTable.setLocation(1100, 0);
-    }// GEN-LAST:event_dataTableBtActionPerformed
+    }
 
     private void setaCores() {
         simulationsComboBox.setBackground(Colors.firstColor(HomePageModel.getColor()));
@@ -1015,9 +1086,8 @@ public final class HomePg extends javax.swing.JFrame {
         Sobre_BT.setText(Language.getSobre());
         Help_BT.setText(Language.getAjudar());
     }
-    // Método para limpar visualmente todos os textos dos relógios
+
     private void clearMemoryLabels() {
-        // Listas de todos os Labels da tela
         JLabel[] tCur = {Temp_atual_1, Temp_atual_2, Temp_atual_3, Temp_atual_4, Temp_atual_5, Temp_atual_6, Temp_atual_7, Temp_atual_8, Temp_atual_9, Temp_atual_10};
         JLabel[] tPre = {Temp_parada_1, Temp_parada_2, Temp_parada_3, Temp_parada_4, Temp_parada_5, Temp_parada_6, Temp_parada_7, Temp_parada_8, Temp_parada_9, Temp_parada_10};
         JLabel[] tName = {Timer_1, Timer_2, Timer_3, Timer_4, Timer_5, Timer_6, Timer_7, Timer_8, Timer_9, Timer_10};
@@ -1026,15 +1096,14 @@ public final class HomePg extends javax.swing.JFrame {
         JLabel[] cPre = {Contagem_parada_1, Contagem_parada_2, Contagem_parada_3, Contagem_parada_4, Contagem_parada_5, Contagem_parada_6, Contagem_parada_7, Contagem_parada_8, Contagem_parada_9, Contagem_parada_10};
         JLabel[] cName = {Contador_1, Contador_2, Contador_3, Contador_4, Contador_5, Contador_6, Contador_7, Contador_8, Contador_9, Contador_10};
 
-        // Apaga o texto de todos
         for (int i = 0; i < 10; i++) {
             tCur[i].setText(""); 
             tPre[i].setText(""); 
-            tName[i].setText(""); // Limpa o nome (ex: T1)
+            tName[i].setText("");
             
             cCur[i].setText(""); 
             cPre[i].setText(""); 
-            cName[i].setText(""); // Limpa o nome (ex: C1)
+            cName[i].setText("");
         }
     }
 
