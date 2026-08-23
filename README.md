@@ -1,107 +1,115 @@
-# 🤖 Simulador de CLP com Interface Interativa (Instruction List - IL)
+# 🤖 Simulador de CLP com Diagrama Ladder Visual & Lista de Instruções (IL)
 
-📚 **Disciplina:** Controladores Lógicos Programáveis (CLP)
-🎓 **Curso:** Engenharia de Computação
-🏫 **Instituição:** IFTM - Instituto Federal do Triângulo Mineiro
-📍 **Campus:** Uberaba - Parque Tecnológico
-👨‍🏫 **Professor:** Robson Rodrigues
+[![Java](https://img.shields.io/badge/Java-21%2B%20%7C%20Swing-ED8B00?logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Completo%20%26%20Funcional-brightgreen)]()
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Pedrofrac%2FTrabalho--Final--CLP-181717?logo=github)](https://github.com/Pedrofrac/Trabalho-Final-CLP)
 
----
-
-## 🚀 Novidades da Versão 2025 (Current Release)
-
-Esta versão traz melhorias significativas de estabilidade e novas funcionalidades em relação ao projeto original:
-
-### ✨ Novas Funcionalidades
-1.  **🚦 Simulação de Semáforo (Traffic Light):**
-    *   Novo cenário interativo simulando um cruzamento real.
-    *   Controle de semáforos para carros (Norte-Sul e Leste-Oeste) e pedestres.
-    *   Sensores de presença indutiva no asfalto.
-    *   Sistema de detecção de colisão e falha crítica.
-2.  **📖 Interface de Ajuda Renovada:**
-    *   Pop-up de ajuda formatado em HTML/CSS para facilitar a leitura dos comandos.
-    *   Exemplos práticos de código embutidos na interface.
-
-### 🐛 Correções de Bugs e Melhorias (Fixes)
-*   **Monitor de Variáveis (Data Table):** Otimização completa da tabela. Agora ela atualiza em tempo real (`upsert`) sem recriar as linhas, eliminando o "piscar" da tela e melhorando a performance.
-*   **Correção de Memória (M0, T, C):** Corrigido bug onde memórias lidas antes de serem escritas causavam erro. Agora elas são auto-inicializadas.
-*   **Display de Numéricos:** Correção na limpeza visual dos displays de Temporizadores e Contadores ao reiniciar a simulação (botão Stop/Start).
-*   **Interpretador:** Melhoria no *parser* para identificar corretamente endereços de memória contendo dígitos 0 e 9.
+📚 **Disciplina:** Controladores Lógicos Programáveis (CLP)  
+🎓 **Curso:** Engenharia de Computação  
+🏫 **Instituição:** IFTM - Instituto Federal do Triângulo Mineiro  
+📍 **Campus:** Uberaba - Parque Tecnológico  
+👨‍🏫 **Professor:** Robson Rodrigues  
 
 ---
 
-## 👥 Desenvolvedores
+## 🌟 Novidades da Versão Atual (Diagrama Ladder + IL)
 
-### 🔹 Grupo Atual (Desenvolvimento 2025)
-*   **Jamilly Moura**
-*   **Pedro Franco de Camargo**
-*   **Pedro Henrique Cândido Silva**
+Esta versão introduz um **motor gráfico completo de Diagrama Ladder (LD)** com renderização e animação de energia em tempo real, mantendo total sincronização bidirecional com a Lista de Instruções (IL).
 
-### 📅 Membros do Grupo Anterior (2024/02)
-*   Diogo Nunes
-*   José Arantes
-*   Vinicius Barbosa
-*   Yuri Duarte
-
-*(O projeto é uma evolução contínua desenvolvida por diversas turmas do curso).*
-
----
-
-## 🛠️ Funcionalidades Principais
-
-### 📝 Lista de Instruções Suportadas (IL)
-O compilador suporta as instruções básicas da norma IEC 61131-3:
-*   **Lógica:** `LD`, `LDN`, `ST`, `STN`, `AND`, `ANDN`, `OR`, `ORN`
-*   **Temporizadores:** `TON`, `TOF` (T1 a T10)
-*   **Contadores:** `CTU`, `CTD` (C1 a C10)
-*   **Endereçamento:**
-    *   Entradas: `I0.0` a `I1.7`
-    *   Saídas: `Q0.0` a `Q1.7`
-    *   Memórias Auxiliares: `M0`, `M1`...
-
-### ✅ Modos de Operação
-*   🛠️ **PROGRAM:** Edição livre do código.
-*   ⏸️ **STOP:** Sistema parado, saídas resetadas.
-*   ▶️ **RUN:** Execução cíclica do programa (Scan Cycle).
-*   🔄 **RESET:** Reinicia a simulação, limpa a memória e reseta os contadores/temporizadores.
-
-### ✅ Cenários de Simulação
-1.  **Painel Padrão:** Botões e LEDs genéricos para testes lógicos.
-2.  **Simulação Batch (Tanque):** Controle de nível, mistura e escoamento com animação de fluidos.
-3.  **Semáforo (Novo):** Controle de tráfego com carros animados e física básica de frenagem/colisão.
+### ⚡ Motor Gráfico de Diagrama Ladder (LD)
+* **Interface Drag & Drop Intuitiva:** Arraste e solte componentes da paleta superior diretamente para as linhas (*rungs*).
+* **Condução de Energia em Tempo Real:** Animação dinâmica das linhas de força. Fios e componentes acendem em **Verde brilhante (`1`)** quando energizados e voltam a **Branco (`0`)** quando desligados.
+* **Sincronização Bidirecional Automática:** Alterne entre a aba do **Diagrama Ladder** e a aba de **Lista de Instruções (IL)** com compilação instantânea em tempo real.
+* **Ramais Paralelos Inteligentes (Lógica OR):** Suporte a bifurcações e fechamentos verticais com continuidade elétrica precisa e dissolução automática de ramais vazios.
+* **Temporizadores e Contadores com Display ao Vivo:** Blocos `TON`, `TOFF`, `CTU` e `CTD` desenham o valor acumulado (`Acc:`) e a meta (`Pre:`) em tempo real dentro da própria caixinha no circuito.
+* **Portas Inversoras / NOT (NF):** Contatos Normalmente Fechados operam com lógica visual de condução invertida (acesos em repouso e abertos quando acionados).
+* **Contagem Precisa na Borda de Descida:** Contadores (`CTU` e `CTD`) operam na soltura do botão com suporte a contagem crescente e decrescente.
+* **Barramentos de Alimentação (24V e 0V):** Identificação visual com barras vermelhas verticais no início (fase) e no fim (neutro) de cada linha.
 
 ---
 
-## 🎨 Interface do Usuário
+## 👥 Autoria e Desenvolvimento
 
-### 📄 Relatório Técnico e Manual
-[![Interface Principal](./docs/home_preview.png)](https://github.com/PedroH2003/Trabalho-Final-CLP/blob/main/Relat%C3%B3rio%20-%20SIMULADOR%20DE%20CLP%20-%20Sem%C3%A1foro.pdf)
-*Clique na imagem acima para acessar o PDF completo com o relatório e manual.*
-
-### 🎥 Demonstração: Simulação de Semáforo
-[![Nova Simulação: Semáforo](./docs/traffic_light_preview.png)](https://www.youtube.com/watch?v=Y22ag0oGnH0)
-*Clique na imagem para assistir ao vídeo da simulação de tráfego funcionando.*
+### 👨‍💻 Desenvolvedor da Versão Ladder (Atual)
+* **Pedro Franco de Camargo** — *Desenvolvimento do Motor Gráfico Ladder, Continuidade Elétrica, Drag & Drop, Cronômetros Dinâmicos e Sincronização Bidirecional.*
 
 ---
 
-## ▶️ Como Executar
+### 📅 Histórico de Membros e Versões Anteriores (Base IL e Cenários)
+* **Colaboradores 2025 (Base IL / Cenário Semáforo):** Jamilly Moura, Pedro Henrique Cândido Silva
+* **Membros 2024/02:** Diogo Nunes, José Arantes, Vinicius Barbosa, Yuri Duarte
+* **Membros Anteriores:** Bruno Rodrigues, Iasmin Pieraço, Igor Vendramini, Peterson, Vinicius Patrick, Emanuelle Oliveira
 
-1.  Baixe o arquivo `Instalador_Simulador_CLP.exe`
+*(O projeto é fruto de uma evolução acadêmica contínua no curso de Engenharia de Computação do IFTM).*
 
-2.  Atualize seu java (jdk) para versão igual ou acima a 23
 ---
 
+## 🛠️ Recursos e Funcionalidades
+
+### 📝 Linguagens e Instruções Suportadas (IEC 61131-3)
+
+| Tipo | Mnemônico IL | Elemento Ladder Visual | Descrição |
+| :--- | :---: | :---: | :--- |
+| **Entrada Direta** | `LD` / `AND` | `—[ ]—` | Contato Normalmente Aberto (NA) |
+| **Entrada Invertida** | `LDN` / `ANDN` | `—[/]—` | Contato Normalmente Fechado (NF / NOT) |
+| **Paralelo (OR)** | `OR` / `ORN` | `—[+]—` / Ramal | Ramo paralelo de condução alternada |
+| **Saída Normal** | `ST` | `—( )—` | Bobina de Saída Direta |
+| **Saída Invertida** | `STN` | `—(/)—` | Bobina de Saída Negada |
+| **Temporizador TON** | `TON T1, Pre` | `[ TON ]` | Temporizador com Retardo na Ligação |
+| **Temporizador TOFF** | `TOFF T2, Pre` | `[ TOFF ]` | Temporizador com Retardo no Desligamento |
+| **Contador CTU** | `CTU C1, Pre` | `[ CTU ]` | Contador Crescente |
+| **Contador CTD** | `CTD C1, Pre` | `[ CTD ]` | Contador Decrescente |
+
+### 🏷️ Endereçamento de Memória
+* **Entradas Físicas:** `I0.0` a `I1.7` (Botoeiras, Sensores e Chaves)
+* **Saídas Físicas:** `Q0.0` a `Q1.7` (Lâmpadas, Motores, Atuadores e Sinalizadores)
+* **Temporizadores:** `T1` a `T10` (com base de tempo configurável)
+* **Contadores:** `C1` a `C10` (com contagem acumulada e meta)
+* **Memórias Auxiliares:** `M0`, `M1`, `M2`...
+
+---
+
+## 🎮 Cenários de Simulação Interativos
+
+1. **Painel Padrão (Default Panel):** Chaves com retenção, botões pulsadores (NA/NF) e LEDs indicadores para validação rápida de lógica booleana.
+2. **Semáforo Inteligente (Traffic Light):** Cruzamento urbano completo com semáforos para veículos (Norte-Sul e Leste-Oeste), semáforos de pedestres com botoeira e sensores indutivos no asfalto com física de colisão.
+3. **Controle de Processo em Batelada (Batch Simulation):** Simulação industrial com tanques, válvulas de entrada/saída, bombas (`Pump 1`, `Pump 2`, `Pump 3`), aquecedor, misturador e sensores de nível alto/baixo.
+
+---
+
+## 🕹️ Modos de Operação
+
+* 🛠️ **Modo Edição (Program):** Edição livre do código IL e montagem visual do Diagrama Ladder com marcadores `[+]` de inserção.
+* ▶️ **Modo Execução (Run / Play):** Ciclo de scan contínuo (100ms), fios condutores com animação de corrente e atualização das saídas e cenários.
+* ⏸️ **Modo Pausa / Parada (Stop / Pause):** Congela o estado ou reseta contadores, temporizadores e saídas para edição segura.
+* 🔄 **Reiniciar (Refresh):** Reseta as variáveis lógicas, memória do CLP e reinicia o cenário visual.
+* 📊 **Tabela de Dados (Data Table):** Janela flutuante para monitoramento em tempo real do estado de todas as entradas, saídas e memórias.
+
+---
+
+## ▶️ Como Executar o Projeto
+
+### Opção 1: Executável Direto (Windows)
+1. Certifique-se de ter o **Java (JDK/JRE 21 ou superior)** instalado.
+2. Execute o instalador `Instalador_Simulador_CLP.exe` ou rode o arquivo `rodar.bat`.
+
+### Opção 2: Pelo Terminal / Linha de Comando
+```bash
+# Clone o repositório
+git clone https://github.com/Pedrofrac/Trabalho-Final-CLP.git
+
+# Acesse a pasta do projeto
+cd Trabalho-Final-CLP
+
+# Execute pelo script batch
+.\rodar.bat
+```
+
+---
 
 ## 📚 Referências e Créditos
 
-Baseado no trabalho desenvolvido pelos alunos do semestre 2024/02:
-🔗 [Repositório Base (Diogo-NB)](https://github.com/Diogo-NB/SimuladorClp)
-
-Inspirado no software **LogixPro Simulator**.
-_______________________________________________________
-
-
-
-
-
-
+* **Norma IEC 61131-3:** Padrão internacional para linguagens de programação de Controladores Lógicos Programáveis.
+* **Inspiração Visual:** Software *LogixPro 500 Simulator* e *Siemens TIA Portal*.
+* **Repositório do Projeto:** [GitHub - Pedrofrac/Trabalho-Final-CLP](https://github.com/Pedrofrac/Trabalho-Final-CLP)

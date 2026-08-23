@@ -17,16 +17,16 @@ public class SobrePopup {
                     
                     /* Títulos */
                     h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; margin-top: 0; }
-                    h3 { color: #e74c3c; margin-top: 20px; margin-bottom: 8px; font-size: 13px; font-weight: bold; }
+                    h3 { color: #e74c3c; margin-top: 18px; margin-bottom: 8px; font-size: 13px; font-weight: bold; }
                     
                     /* Caixas de Texto (Conceito) */
-                    .concept { background-color: #f0f8ff; padding: 10px; border-radius: 5px; border-left: 5px solid #3498db; margin-bottom: 15px; color: #2c3e50;}
+                    .concept { background-color: #f0f8ff; padding: 10px; border-radius: 5px; border-left: 5px solid #3498db; margin-bottom: 12px; color: #2c3e50; line-height: 1.4; }
                     
-                    /* Listas de Nomes */
-                    ul { margin: 5px 0; padding-left: 25px; color: #555; }
-                    li { margin-bottom: 3px; }
+                    /* Listas de Nomes e Recursos */
+                    ul { margin: 5px 0; padding-left: 22px; color: #444; }
+                    li { margin-bottom: 4px; }
                     
-                    /* Estilo dos Links (Parecem botões/cards agora) */
+                    /* Estilo dos Links */
                     .repo-container { margin-top: 5px; }
                     .repo-item { 
                         background-color: #f8f9fa; 
@@ -35,49 +35,60 @@ public class SobrePopup {
                         padding: 8px; 
                         border-radius: 4px;
                     }
-                    /* O link em si */
                     a { 
                         color: #0066cc; 
                         text-decoration: none; 
                         font-weight: bold; 
                         font-size: 12px;
                     }
-                    /* Pequena descrição ao lado do link */
                     .repo-desc { color: #777; font-size: 10px; margin-left: 5px; }
 
                     /* Rodapé */
-                    .note { color: #888; font-style: italic; font-size: 10px; margin-top: 25px; border-top: 1px solid #eee; padding-top: 10px; text-align: center; }
+                    .note { color: #888; font-style: italic; font-size: 10px; margin-top: 22px; border-top: 1px solid #eee; padding-top: 10px; text-align: center; }
                 </style>
             </head>
             <body>
-                <h2>ℹ️ Sobre o Projeto</h2>
+                <h2>ℹ️ Sobre o Projeto - Simulador de CLP</h2>
                 
                 <div class='concept'>
-                    Compilador e simulador para a linguagem <b>Instruction List (IL)</b>, desenvolvido colaborativamente.
+                    Ambiente integrado para ensino e simulação de <b>Controladores Lógicos Programáveis (CLP)</b>, com suporte bidirecional sincronizado entre <b>Diagrama Ladder Visual (LD)</b> e <b>Lista de Instruções (IL)</b>.
                 </div>
 
-                <h3>👥 Desenvolvedores Atuais (2025)</h3>
+                <h3>👨‍💻 Desenvolvedor da Versão Ladder (2025/2026)</h3>
                 <ul>
-                    <li>Jamilly Moura</li>
-                    <li>Pedro Franco de Camargo</li>
-                    <li>Pedro Henrique Cândido Silva</li>
+                    <li><b>Pedro Franco de Camargo</b> <span style='color: #27ae60; font-weight: bold;'>(Motor Ladder, Drag & Drop, Continuidade Elétrica e Cronômetros Dinâmicos)</span></li>
                 </ul>
 
-                <h3>📅 Histórico de Membros</h3>
+                <h3>✨ Principais Recursos</h3>
                 <ul>
+                    <li><b>Diagrama Ladder Visual:</b> Montagem dinâmica via Drag & Drop com ramais paralelos e contatos NA/NF.</li>
+                    <li><b>Condução de Energia em Tempo Real:</b> Linhas de energia que acendem em verde indicando a passagem de corrente.</li>
+                    <li><b>Sincronização Bidirecional:</b> Conversão instantânea e automática entre Ladder e Lista de Instruções.</li>
+                    <li><b>Temporizadores e Contadores:</b> Blocos TON, TOFF, CTU e CTD com display de contagem em tempo real.</li>
+                    <li><b>Cenários Práticos:</b> Semáforo de trânsito inteligente e controle de processo (Batch).</li>
+                </ul>
+
+                <h3>📅 Histórico do Projeto (Versões Anteriores - Base IL)</h3>
+                <ul>
+                    <li><b>Colaboradores 2025:</b> Jamilly Moura,Pedro Franco de Camargo, Pedro Henrique Cândido Silva, </li>
                     <li><b>2024/02:</b> Diogo Nunes, José Arantes, Vinicius Barbosa, Yuri Duarte</li>
-                    <li><b>Anteriores:</b> Bruno Rodrigues, Iasmin Pieraço, Igor Vendramini, Peterson, Vinicius Patrick</li>
+                    <li><b>Anteriores:</b> Bruno Rodrigues, Iasmin Pieraço, Igor Vendramini, Peterson, Vinicius Patrick, Emanuelle Oliveira</li>
                 </ul>
 
                 <h3>💻 Código Fonte (GitHub)</h3>
                 <div class='repo-container'>
                     <!-- Repositório Atual -->
                     <div class='repo-item' style='background-color: #e8f4fd; border-color: #b6e0fe;'>
-                        🚀 <a href='https://github.com/PedroH2003/Trabalho-Final-CLP'>Acessar Repositório Atual</a>
-                        <span class='repo-desc'>(Versão em uso)</span>
+                        🚀 <a href='https://github.com/Pedrofrac/Trabalho-Final-CLP'>Acessar Repositório Atual (Pedrofrac)</a>
+                        <span class='repo-desc'>(Versão com Diagrama Ladder e IL)</span>
                     </div>
 
                     <!-- Repositórios Antigos -->
+                    <div class='repo-item'>
+                        📂 <a href='https://github.com/PedroH2003/Trabalho-Final-CLP'>Repositório Base 2025</a>
+                        <span class='repo-desc'>(Versão IL)</span>
+                    </div>
+
                     <div class='repo-item'>
                         📂 <a href='https://github.com/Diogo-NB/SimuladorClp'>Repositório 2024/02</a>
                         <span class='repo-desc'>(Base anterior)</span>
@@ -86,15 +97,11 @@ public class SobrePopup {
                     <div class='repo-item'>
                         📂 <a href='https://github.com/IasminPieraco/Trabalho-Final-CLP'>Repositório 2024/01</a>
                     </div>
-                    
-                    <div class='repo-item'>
-                        📂 <a href='https://github.com/Emanuelle-Oliveira/compilador-il-clp'>Repositório Inicial</a>
-                    </div>
                 </div>
 
                 <div class='note'>
                     "O sucesso é a soma de pequenos esforços repetidos dia após dia."
-                    <br>O projeto evolui a cada semestre com novas turmas.
+                    <br>Desenvolvido para fins acadêmicos e estudo de automação industrial.
                 </div>
             </body>
             </html>
@@ -104,30 +111,27 @@ public class SobrePopup {
         editorPane.setEditable(false);
         editorPane.setOpaque(false);
 
-        // Listener para cliques
+        // Listener para cliques nos links
         editorPane.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     try {
-                        String url = e.getURL().toString();
-                        if (!url.contains("insira o link aqui")) {
+                        String url = e.getURL() != null ? e.getURL().toString() : e.getDescription();
+                        if (url != null && !url.isEmpty()) {
                             Desktop.getDesktop().browse(new URI(url));
-                        } else {
-                            JOptionPane.showMessageDialog(null, 
-                                "O link do repositório atual ainda não foi definido no código.", 
-                                "Link Indisponível", 
-                                JOptionPane.WARNING_MESSAGE);
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, 
+                            "Erro ao abrir o link no navegador: " + ex.getMessage(), 
+                            "Erro", 
+                            JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
         });
 
         JScrollPane scrollPane = new JScrollPane(editorPane);
-        scrollPane.setPreferredSize(new java.awt.Dimension(520, 550));
-        // Remove a borda do scrollpane para ficar mais limpo
+        scrollPane.setPreferredSize(new java.awt.Dimension(540, 580));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         JOptionPane.showMessageDialog(null, scrollPane, "Sobre o Projeto", JOptionPane.PLAIN_MESSAGE);
