@@ -7,30 +7,35 @@ import java.util.Map;
 import screens.HomePg;
 import screens.ladder.LadderCanvas;
 
-// Classe que interpreta as instrucoes
 public class Interpreter {
 
-    // Cria variaveis
     static Boolean accumulator;
     static List<String> validOperators = new ArrayList<>();
 
-    // Define operadores validos
     public static void initializeValidOperators() {
+        validOperators.clear();
         validOperators.add("LD");
         validOperators.add("LDN");
         validOperators.add("ST");
         validOperators.add("STN");
+        validOperators.add("S");
+        validOperators.add("R");
+        validOperators.add("SET");
+        validOperators.add("RST");
+        validOperators.add("OTL");
+        validOperators.add("OTU");
         validOperators.add("AND");
         validOperators.add("ANDN");
         validOperators.add("OR");
         validOperators.add("ORN");
         validOperators.add("TON");
         validOperators.add("TOFF");
+        validOperators.add("RTO");
         validOperators.add("CTD");
         validOperators.add("CTU");
+        validOperators.add("RES");
     }
 
-    // Recebe linhas vindas da tela e separa operador e variavel
     public static Map receiveLines(List<String> lineList, Map<String, Boolean> inputs, Map<String, Boolean> outputs,
             Map<String, MemoryVariable> memoryVariables) {
 
@@ -38,7 +43,7 @@ public class Interpreter {
         Boolean spaceDetected = false;
         String operator = "";
         String variable = "";
-        ArrayList<String> variables = new ArrayList();
+        ArrayList<String> variables = new ArrayList<>();
         Boolean justEmptyLines = true;
 
         initializeValidOperators();
@@ -84,20 +89,19 @@ public class Interpreter {
             HomePg.showErrorMessage("Insira as intruções para o CLP!");
         }
 
-        // Notifica o diagrama Ladder para animar o brilho verde em tempo real
+        // Animação em tempo real do diagrama visual
         LadderCanvas.updateStateGlobal(inputs, outputs, memoryVariables);
 
         return outputs;
     }
 
     public static boolean operatorIsValid(String operator) {
-        Boolean isValid = false;
-        for (int i = 0; i < validOperators.size(); i++) {
-            if (!isValid && validOperators.get(i).equals(operator)) {
-                isValid = true;
+        for (String valid : validOperators) {
+            if (valid.equalsIgnoreCase(operator)) {
+                return true;
             }
         }
-        return isValid;
+        return false;
     }
 
     public static String getMemoryType(String variable) {
@@ -115,7 +119,7 @@ public class Interpreter {
 
         try {
             cod = Integer.parseInt(code);
-        } catch (Exception E) {}
+        } catch (Exception ignored) {}
 
         if (!type.equals("M") && !type.equals("T") && !type.equals("C")) {
             HomePg.showErrorMessage("Sintaxe incorreta! Espaço de memória " + variable + " não existe!");
@@ -129,33 +133,41 @@ public class Interpreter {
     }
 
     public static boolean inputIsValid(ArrayList<String> variables, Map<String, Boolean> inputs) {
-        Boolean isValid = true;
-        if (inputs.get(variables.get(0)) == null) {
-            isValid = false;
-        }
-        return isValid;
+        return !variables.isEmpty() && inputs.containsKey(variables.get(0));
     }
 
     public static boolean outputIsValid(ArrayList<String> variables, Map<String, Boolean> outputs) {
-        Boolean isValid = true;
-        if (outputs.get(variables.get(0)) == null) {
-            isValid = false;
-        }
-        return isValid;
+        return !variables.isEmpty() && outputs.containsKey(variables.get(0));
     }
 
     public static boolean memoryVariableIsValid(ArrayList<String> variables,
             Map<String, MemoryVariable> memoryVariables) {
-        Boolean isValid = true;
-        if (memoryVariables.get(variables.get(0)) == null) {
-            isValid = false;
-        }
-        return isValid;
+        return !variables.isEmpty() && memoryVariables.containsKey(variables.get(0));
     }
 
     public static Map executeInstruction(String operator, ArrayList<String> variables, Map<String, Boolean> inputs,
             Map<String, Boolean> outputs, Map<String, MemoryVariable> memoryVariables) {
         
+        operator = operator.toUpperCase();
+
+        // 1. Instrução de Reset Explicito (RES) - Só executa se a linha estiver conduzindo (accumulator == true)
+        if (operator.equals("RES")) {
+            String target = variables.get(0).toUpperCase();
+            if (Boolean.TRUE.equals(accumulator)) {
+                if (target.startsWith("T") || target.startsWith("C")) {
+                    if (memoryVariables.containsKey(target)) {
+                        MemoryVariable mv = memoryVariables.get(target);
+                        mv.reset();
+                    }
+                } else if (target.startsWith("Q") && outputs.containsKey(target)) {
+                    outputs.put(target, false);
+                } else if (target.startsWith("M") && memoryVariables.containsKey(target)) {
+                    memoryVariables.get(target).currentValue = false;
+                }
+            }
+            return outputs;
+        }
+
         if (operatorIsValid(operator) && (inputIsValid(variables, inputs) || outputIsValid(variables, outputs))) {
 
             if (operator.equals("LD")) {
@@ -169,6 +181,7 @@ public class Interpreter {
             }
 
             if (accumulator != null) {
+                // Bobina Normal e Invertida
                 if (operator.equals("ST") || operator.equals("STN")) {
                     if (outputIsValid(variables, outputs)) {
                         if (operator.equals("ST")) {
@@ -178,8 +191,20 @@ public class Interpreter {
                             if (variables.get(0).charAt(0) == 'Q') outputs.put(variables.get(0), !accumulator);
                         }
                     } else {
-                        HomePg.showErrorMessage(
-                                "Entradas não podem ser modificadas, portanto, operadores ST e STN não são válidos para entradas!");
+                        HomePg.showErrorMessage("Entradas não podem ser modificadas com ST/STN!");
+                    }
+                }
+
+                // Bobinas Latch (Set) e Unlatch (Reset) para Saídas Físicas (Q)
+                if (operator.equals("S") || operator.equals("SET") || operator.equals("OTL")) {
+                    if (outputIsValid(variables, outputs)) {
+                        if (accumulator) outputs.put(variables.get(0), true);
+                    }
+                }
+
+                if (operator.equals("R") || operator.equals("RST") || operator.equals("OTU")) {
+                    if (outputIsValid(variables, outputs)) {
+                        if (accumulator) outputs.put(variables.get(0), false);
                     }
                 }
 
@@ -203,107 +228,83 @@ public class Interpreter {
                     if (variables.get(0).charAt(0) == 'Q') accumulator = (accumulator || !(outputs.get(variables.get(0))));
                 }
             } else {
-                HomePg.showErrorMessage(
-                        "Acumulador vazio! Carregue inicialmente a variável desejada para o acumulador com as funções LD ou LDN!");
+                HomePg.showErrorMessage("Acumulador vazio! Carregue inicialmente a variável com LD ou LDN!");
             }
 
-        } else if (operatorIsValid(operator) && !inputIsValid(variables, inputs)
-                && !outputIsValid(variables, outputs)) {
-            if (operator.equals("ST") || operator.equals("STN") || operator.equals("TON") || operator.equals("TOFF")
+        } else if (operatorIsValid(operator) && !inputIsValid(variables, inputs) && !outputIsValid(variables, outputs)) {
+            
+            if (operator.equals("ST") || operator.equals("STN") || operator.equals("S") || operator.equals("SET")
+                    || operator.equals("OTL") || operator.equals("R") || operator.equals("RST") || operator.equals("OTU")
+                    || operator.equals("TON") || operator.equals("TOFF") || operator.equals("RTO")
                     || operator.equals("CTD") || operator.equals("CTU")) {
+                
                 String type = getMemoryType(variables.get(0));
                 if (!type.equals("")) {
-                    if (memoryVariableIsValid(variables, memoryVariables)) {
-                        MemoryVariable memVar = memoryVariables.get(variables.get(0));
-                        
-                        if (operator.equals("ST")) {
-                            if (type.equals("C")) {
-                                memVar.testEndTimer();
-                                if (!memVar.currentValue && accumulator) {
-                                    if (memVar.counterType.equals("UP")) memVar.incrementCounter();
-                                    else if (memVar.counterType.equals("DOWN")) memVar.decrementCounter();
-                                }
+                    if (!memoryVariableIsValid(variables, memoryVariables)) {
+                        memoryVariables.put(variables.get(0), new MemoryVariable(variables.get(0)));
+                    }
+
+                    MemoryVariable memVar = memoryVariables.get(variables.get(0));
+
+                    if (operator.equals("ST")) {
+                        if (type.equals("C")) {
+                            memVar.testEndTimer();
+                            if (!memVar.currentValue && Boolean.TRUE.equals(accumulator)) {
+                                if (memVar.counterType.equals("UP")) memVar.incrementCounter();
+                                else if (memVar.counterType.equals("DOWN")) memVar.decrementCounter();
                             }
-                            memVar.currentValue = accumulator;
                         }
+                        memVar.currentValue = accumulator;
+                    }
 
-                        if (operator.equals("STN")) {
-                            if (type.equals("C")) {
-                                memVar.testEndTimer();
-                                if (memVar.currentValue && !accumulator) {
-                                    if (memVar.counterType.equals("UP")) memVar.incrementCounter();
-                                    else if (memVar.counterType.equals("DOWN")) memVar.decrementCounter();
-                                }
+                    if (operator.equals("STN")) {
+                        if (type.equals("C")) {
+                            memVar.testEndTimer();
+                            if (memVar.currentValue && Boolean.FALSE.equals(accumulator)) {
+                                if (memVar.counterType.equals("UP")) memVar.incrementCounter();
+                                else if (memVar.counterType.equals("DOWN")) memVar.decrementCounter();
                             }
-                            memVar.currentValue = !accumulator;
                         }
+                        memVar.currentValue = !accumulator;
+                    }
 
-                        if (operator.equals("TON") && type.equals("T")) {
-                            memVar.maxTimer = Integer.parseInt(variables.get(1));
-                            memVar.timerType = "ON";
-                        } else if (operator.equals("TON")) {
-                             HomePg.showErrorMessage("Sintaxe incorreta! Espaço de memória " + variables.get(0) + " invalido!");
-                        }
+                    // Set / Latch em Memória Booleana (M)
+                    if (operator.equals("S") || operator.equals("SET") || operator.equals("OTL")) {
+                        if (Boolean.TRUE.equals(accumulator)) memVar.currentValue = true;
+                    }
 
-                        if (operator.equals("TOFF") && type.equals("T")) {
-                            memVar.maxTimer = Integer.parseInt(variables.get(1));
-                            memVar.timerType = "OFF";
-                        } else if (operator.equals("TOFF")) {
-                             HomePg.showErrorMessage("Sintaxe incorreta! Espaço de memória " + variables.get(0) + " invalido!");
-                        }
+                    // Reset / Unlatch em Memória Booleana (M)
+                    if (operator.equals("R") || operator.equals("RST") || operator.equals("OTU")) {
+                        if (Boolean.TRUE.equals(accumulator)) memVar.currentValue = false;
+                    }
 
-                        if (operator.equals("CTD") && type.equals("C")) {
-                            memVar.maxTimer = Integer.parseInt(variables.get(1));
-                            memVar.counterType = "DOWN";
-                        } else if (operator.equals("CTD")) {
-                             HomePg.showErrorMessage("Sintaxe incorreta! Espaço de memória " + variables.get(0) + " invalido!");
-                        }
+                    if (operator.equals("TON") && type.equals("T")) {
+                        memVar.maxTimer = Integer.parseInt(variables.get(1));
+                        memVar.timerType = "ON";
+                    }
 
-                        if (operator.equals("CTU") && type.equals("C")) {
-                            memVar.maxTimer = Integer.parseInt(variables.get(1));
-                            memVar.counterType = "UP";
-                        } else if (operator.equals("CTU")) {
-                             HomePg.showErrorMessage("Sintaxe incorreta! Espaço de memória " + variables.get(0) + " invalido!");
-                        }
-                    } else {
-                        if (operator.equals("ST") || operator.equals("STN")) {
-                            MemoryVariable newMem = new MemoryVariable(variables.get(0));
-                            if (operator.equals("ST")) newMem.currentValue = accumulator;
-                            else newMem.currentValue = !accumulator;
-                            memoryVariables.put(variables.get(0), newMem);
-                        }
+                    if (operator.equals("TOFF") && type.equals("T")) {
+                        memVar.maxTimer = Integer.parseInt(variables.get(1));
+                        memVar.timerType = "OFF";
+                    }
 
-                        if (operator.equals("TON") && type.equals("T")) {
-                            MemoryVariable newMem = new MemoryVariable(variables.get(0));
-                            newMem.maxTimer = Integer.parseInt(variables.get(1));
-                            newMem.timerType = "ON";
-                            memoryVariables.put(variables.get(0), newMem);
-                        } 
+                    if (operator.equals("RTO") && type.equals("T")) {
+                        memVar.maxTimer = Integer.parseInt(variables.get(1));
+                        memVar.timerType = "RTO";
+                    }
 
-                        if (operator.equals("TOFF") && type.equals("T")) {
-                            MemoryVariable newMem = new MemoryVariable(variables.get(0));
-                            newMem.maxTimer = Integer.parseInt(variables.get(1));
-                            newMem.timerType = "OFF";
-                            memoryVariables.put(variables.get(0), newMem);
-                        }
+                    if (operator.equals("CTD") && type.equals("C")) {
+                        memVar.maxTimer = Integer.parseInt(variables.get(1));
+                        memVar.counterType = "DOWN";
+                    }
 
-                        if (operator.equals("CTD") && type.equals("C")) {
-                            MemoryVariable newMem = new MemoryVariable(variables.get(0));
-                            newMem.maxTimer = Integer.parseInt(variables.get(1));
-                            newMem.counterType = "DOWN";
-                            memoryVariables.put(variables.get(0), newMem);
-                        }
-
-                        if (operator.equals("CTU") && type.equals("C")) {
-                            MemoryVariable newMem = new MemoryVariable(variables.get(0));
-                            newMem.maxTimer = Integer.parseInt(variables.get(1));
-                            newMem.counterType = "UP";
-                            memoryVariables.put(variables.get(0), newMem);
-                        }
+                    if (operator.equals("CTU") && type.equals("C")) {
+                        memVar.maxTimer = Integer.parseInt(variables.get(1));
+                        memVar.counterType = "UP";
                     }
                 }
             } else {
-                if (memoryVariables.get(variables.get(0)) == null) {
+                if (!memoryVariables.containsKey(variables.get(0))) {
                     String typeToCheck = getMemoryType(variables.get(0));
                     if (!typeToCheck.equals("")) {
                         memoryVariables.put(variables.get(0), new MemoryVariable(variables.get(0)));

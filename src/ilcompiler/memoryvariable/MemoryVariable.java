@@ -1,8 +1,6 @@
 package ilcompiler.memoryvariable;
 
-// Classe variável de memória
 import java.awt.event.ActionEvent;
-
 import javax.swing.Timer;
 
 public class MemoryVariable {
@@ -13,8 +11,8 @@ public class MemoryVariable {
     public int counter;
     public int maxTimer;
     public Timer timer;
-    public String timerType;
-    public String counterType;
+    public String timerType;   // "ON", "OFF", "RTO"
+    public String counterType; // "UP", "DOWN"
 
     public MemoryVariable(String id) {
         this.id = id;
@@ -29,8 +27,8 @@ public class MemoryVariable {
             if (counter < maxTimer) {
                 counter++;
             }
-            if (counter == maxTimer) {
-                if (timerType.equals("ON")) {
+            if (counter >= maxTimer) {
+                if (timerType.equals("ON") || timerType.equals("RTO")) {
                     endTimer = true;
                 } else if (timerType.equals("OFF")) {
                     endTimer = false;
@@ -38,6 +36,17 @@ public class MemoryVariable {
                 timer.stop();
             }
         });
+    }
+
+    public void reset() {
+        this.counter = 0;
+        this.endTimer = false;
+        if (this.timer != null) {
+            this.timer.stop();
+        }
+        if (this.id.startsWith("M")) {
+            this.currentValue = false;
+        }
     }
 
     public String getMemory() {
@@ -51,6 +60,8 @@ public class MemoryVariable {
                         "Timer On memory: " + id + ", State:" + currentValue + ", Accum:" + counter + ", Preset:" + maxTimer + ", DN:" + endTimer;
                     case "OFF" ->
                         "Timer Off memory: " + id + ", State:" + currentValue + ", Accum:" + counter + ", Preset:" + maxTimer + ", DN:" + endTimer;
+                    case "RTO" ->
+                        "Retentive Timer On memory: " + id + ", State:" + currentValue + ", Accum:" + counter + ", Preset:" + maxTimer + ", DN:" + endTimer;
                     default ->
                         "Timer type error";
                 };
@@ -121,13 +132,11 @@ public class MemoryVariable {
     }
 
     public void testEndTimer() {
-
         if (this.counterType.equals("UP")) {
             endTimer = this.counter >= this.maxTimer;
         } else if (this.counterType.equals("DOWN")) {
             endTimer = this.counter <= this.maxTimer;
         }
-
     }
 
     public void decrementCounter() {

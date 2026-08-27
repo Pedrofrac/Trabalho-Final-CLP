@@ -268,10 +268,14 @@ public class LadderRung extends JPanel {
         LadderBlock newBlock = null;
         if (tool.equals("NO")) newBlock = new ContactBlock("<???>", true);
         else if (tool.equals("NC")) newBlock = new ContactBlock("<???>", false);
-        else if (tool.equals("COIL")) newBlock = new CoilBlock("<???>", true);
-        else if (tool.equals("COIL_NEG")) newBlock = new CoilBlock("<???>", false);
-        else if (tool.equals("TON") || tool.equals("TOFF") || tool.equals("CTU") || tool.equals("CTD")) {
+        else if (tool.equals("COIL")) newBlock = new CoilBlock("<???>", "NORMAL");
+        else if (tool.equals("COIL_NEG")) newBlock = new CoilBlock("<???>", "COIL_NEG");
+        else if (tool.equals("LATCH") || tool.equals("L")) newBlock = new CoilBlock("<???>", "LATCH");
+        else if (tool.equals("UNLATCH") || tool.equals("U")) newBlock = new CoilBlock("<???>", "UNLATCH");
+        else if (tool.equals("TON") || tool.equals("TOFF") || tool.equals("RTO") || tool.equals("CTU") || tool.equals("CTD")) {
             newBlock = new BoxBlock(tool, "<???>", "?");
+        } else if (tool.equals("RES")) {
+            newBlock = new BoxBlock("RES", "<???>", "0");
         }
 
         if (newBlock != null) {

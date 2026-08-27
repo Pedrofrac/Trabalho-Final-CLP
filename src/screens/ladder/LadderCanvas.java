@@ -20,36 +20,44 @@ public class LadderCanvas extends JPanel {
         this.setLayout(new BorderLayout());
         this.setBackground(new Color(24, 28, 36));
 
-        JPanel palette = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        palette.setBackground(new Color(230, 240, 230)); 
-        palette.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Color.GRAY));
+        // ------------------ Paleta Superior em Abas ------------------
+        JTabbedPane toolTabs = new JTabbedPane();
+        toolTabs.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
-        JButton btnAddRung = new JButton("+ Linha");
-        JButton btnClear = new JButton("Limpar");
+        // Aba 1: Bit / Lógica
+        JPanel tabBit = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        tabBit.setBackground(new Color(225, 232, 240));
+        tabBit.add(new DraggableTool("Contato Aberto (NO)", "NO"));
+        tabBit.add(new DraggableTool("Contato Fechado (NC)", "NC"));
+        tabBit.add(new DraggableTool("Bobina Normal (ST)", "COIL"));
+        tabBit.add(new DraggableTool("Bobina Negada (STN)", "COIL_NEG"));
+        tabBit.add(new DraggableTool("Bobina Latch -(L)- (Set)", "LATCH"));
+        tabBit.add(new DraggableTool("Bobina Unlatch -(U)- (Reset)", "UNLATCH"));
+        tabBit.add(new DraggableTool("Ramal Paralelo (OR)", "OR"));
 
-        DraggableTool dragNO = new DraggableTool("Contato Aberto", "NO");
-        DraggableTool dragNC = new DraggableTool("Contato Fechado", "NC");
-        DraggableTool dragOR = new DraggableTool("Paralelo (OR)", "OR");
-        DraggableTool dragCoil = new DraggableTool("Bobina", "COIL");
-        DraggableTool dragCoilN = new DraggableTool("Bobina Inv.", "COIL_NEG");
-        DraggableTool dragTON = new DraggableTool("Timer TON", "TON");
-        DraggableTool dragTOFF = new DraggableTool("Timer TOFF", "TOFF");
-        DraggableTool dragCTU = new DraggableTool("Contador CTU", "CTU");
-        DraggableTool dragCTD = new DraggableTool("Contador CTD", "CTD");
-        
-        palette.add(btnAddRung);
-        palette.add(dragNO);
-        palette.add(dragNC);
-        palette.add(dragOR);
-        palette.add(dragCoil);
-        palette.add(dragCoilN);
-        palette.add(dragTON);
-        palette.add(dragTOFF);
-        palette.add(dragCTU);
-        palette.add(dragCTD);
-        palette.add(btnClear);
+        // Aba 2: Timer / Counter
+        JPanel tabTimer = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        tabTimer.setBackground(new Color(225, 232, 240));
+        tabTimer.add(new DraggableTool("Timer On-Delay", "TON"));
+        tabTimer.add(new DraggableTool("Timer Off-Delay", "TOFF"));
+        tabTimer.add(new DraggableTool("Timer Retentivo (RTO)", "RTO"));
+        tabTimer.add(new DraggableTool("Contador Crescente (CTU)", "CTU"));
+        tabTimer.add(new DraggableTool("Contador Decrescente (CTD)", "CTD"));
+        tabTimer.add(new DraggableTool("Reset de Timer/Contador (RES)", "RES"));
 
-        this.add(palette, BorderLayout.NORTH);
+        // Aba 3: Controle / Linhas
+        JPanel tabControl = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        tabControl.setBackground(new Color(225, 232, 240));
+        JButton btnAddRung = new JButton("+ Adicionar Linha");
+        JButton btnClear = new JButton("Limpar Diagrama");
+        tabControl.add(btnAddRung);
+        tabControl.add(btnClear);
+
+        toolTabs.addTab("Bit / Lógica", tabBit);
+        toolTabs.addTab("Timer / Counter", tabTimer);
+        toolTabs.addTab("Controle", tabControl);
+
+        this.add(toolTabs, BorderLayout.NORTH);
 
         rungsContainer = new JPanel();
         rungsContainer.setLayout(new BoxLayout(rungsContainer, BoxLayout.Y_AXIS));
@@ -156,11 +164,23 @@ public class LadderCanvas extends JPanel {
             String op = parts[0];
             String args = parts.length > 1 ? parts[1] : "";
 
-            if (op.equals("TON") || op.equals("TOFF") || op.equals("CTU") || op.equals("CTD")) {
+            if (op.equals("TON") || op.equals("TOFF") || op.equals("RTO") || op.equals("CTU") || op.equals("CTD")) {
                 String[] subArgs = args.split(",");
                 String var = subArgs[0];
                 String pre = subArgs.length > 1 ? subArgs[1] : "0";
                 declaredBoxes.put(var, new String[]{op, pre});
+                expectedLDToIgnore = null;
+                continue;
+            }
+
+            if (op.equals("RES")) {
+                if (currentRung == null) {
+                    currentRung = new LadderRung();
+                    rungs.add(currentRung);
+                    rungsContainer.add(currentRung);
+                }
+                BoxBlock resBlock = new BoxBlock("RES", args, "0");
+                currentRung.addBlockAt(resBlock, currentRung.getBlockCount());
                 expectedLDToIgnore = null;
                 continue;
             }
@@ -189,13 +209,23 @@ public class LadderCanvas extends JPanel {
                         currentRung.addBlockAt(bb, currentRung.getBlockCount());
                         expectedLDToIgnore = args; 
                     } else {
-                        CoilBlock coil = new CoilBlock(args, true);
+                        CoilBlock coil = new CoilBlock(args, "NORMAL");
                         currentRung.addBlockAt(coil, currentRung.getBlockCount());
                         expectedLDToIgnore = null;
                     }
                 }
                 else if (op.equals("STN")) {
-                    CoilBlock coil = new CoilBlock(args, false);
+                    CoilBlock coil = new CoilBlock(args, "COIL_NEG");
+                    currentRung.addBlockAt(coil, currentRung.getBlockCount());
+                    expectedLDToIgnore = null;
+                }
+                else if (op.equals("S") || op.equals("SET") || op.equals("OTL")) {
+                    CoilBlock coil = new CoilBlock(args, "LATCH");
+                    currentRung.addBlockAt(coil, currentRung.getBlockCount());
+                    expectedLDToIgnore = null;
+                }
+                else if (op.equals("R") || op.equals("RST") || op.equals("OTU")) {
+                    CoilBlock coil = new CoilBlock(args, "UNLATCH");
                     currentRung.addBlockAt(coil, currentRung.getBlockCount());
                     expectedLDToIgnore = null;
                 }

@@ -48,12 +48,10 @@ public class HomePageController {
             List<JLabel> currentLabels, List<JLabel> stopLabels) {
         for (int i = 0; i < cVariables.size(); i++) {
             updateLabels(cVariables.get(i), counterLabels.get(i), currentLabels.get(i), stopLabels.get(i));
-
         }
     }
 
-    // -------------------- Função para Ações de Arquivar Arquivo
-    // --------------------
+    // -------------------- Função para Ações de Arquivar Arquivo --------------------
     public static void handleFileArchiveAction(
             JComboBox<String> arquivarComboBox,
             JTextArea codigoCampTextArea,
@@ -110,8 +108,7 @@ public class HomePageController {
         }
     }
 
-    // -------------------- Funções para Controle do Ciclo e Timers
-    // --------------------
+    // -------------------- Funções para Controle do Ciclo e Timers --------------------
     public Integer parseDelay(String delayStr) {
         if (delayStr == null || delayStr.isBlank()) {
             return 0;
@@ -132,8 +129,6 @@ public class HomePageController {
         List<String> lineList = homePage.saveLines(new ArrayList<>());
 
         HomePageModel.setInputs(InputActions.read(HomePageModel.getInputs()));
-        /* TODO - Investigar se podemos realmente deixar isso aqui comentado */
-        // HomePageModel.setOutputs(OutputActions.resetOutputs(HomePageModel.getOutputs()));
         HomePageModel.setOutputs(
                 Interpreter.receiveLines(lineList, HomePageModel.getInputs(), HomePageModel.getOutputs(),
                         HomePageModel.getMemoryVariables()));
@@ -153,15 +148,24 @@ public class HomePageController {
 
             MemoryVariable var = variable.getValue();
             boolean isOnTimer = "ON".equals(var.timerType);
+            boolean isRtoTimer = "RTO".equals(var.timerType);
             boolean isOffTimer = "OFF".equals(var.timerType);
 
             if (isOnTimer) {
+                // TON Comum: zera automaticamente se desenergizado
                 if (var.currentValue) {
                     var.timer.start();
                 } else {
                     var.timer.stop();
                     var.counter = 0;
                     var.endTimer = false;
+                }
+            } else if (isRtoTimer) {
+                // RTO Retentivo: apenas pausa o timer sem zerar o acumulador ao perder energia
+                if (var.currentValue && !var.endTimer) {
+                    var.timer.start();
+                } else {
+                    var.timer.stop();
                 }
             } else if (isOffTimer) {
                 if (var.currentValue) {
@@ -187,6 +191,7 @@ public class HomePageController {
         for (Map.Entry<String, MemoryVariable> variable : HomePageModel.getMemoryVariables().entrySet()) {
             if (variable.getKey().charAt(0) == 'T') {
                 variable.getValue().counter = 0;
+                variable.getValue().endTimer = false;
             }
         }
     }
@@ -202,11 +207,11 @@ public class HomePageController {
             MemoryVariable variable = entry.getValue();
             variable.timer.stop();
             variable.counter = 0;
+            variable.endTimer = false;
             variable.currentValue = false;
         }
 
         homePage.updateMemoryVariables();
         homePage.updateSceneUI();
     }
-
 }
