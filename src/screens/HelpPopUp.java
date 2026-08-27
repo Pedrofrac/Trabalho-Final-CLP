@@ -20,121 +20,116 @@ public class HelpPopUp {
             h3 { color: #d9534f; margin-top: 14px; margin-bottom: 4px; font-size: 12px; }
             .concept { background-color: #e9ecef; padding: 6px; border-radius: 4px; margin-bottom: 6px; }
             .code-box { background-color: #2d2d2d; color: #50fa7b; padding: 8px; border-radius: 4px; font-family: Consolas, monospace; margin: 4px 0; font-size: 11px; }
+            .comment { color: #8be9fd; font-style: italic; }
             strong { color: #000; }
             li { margin-bottom: 3px; }
             .footer { margin-top: 15px; padding-top: 8px; border-top: 1px solid #ccc; font-size: 10px; color: #555; }
         </style>
     </head>
     <body>
-        <h2>📖 Guia Completo de Programação IL & Ladder</h2>
+        <h2>📖 Manual Técnico de Programação IL & Ladder</h2>
         
         <div class='concept'>
-            <strong>Como funciona?</strong> O CLP lê o código linha por linha. Imagine que você está montando uma frase lógica: <br>
-            <i>"SE (botão apertado) E (sensor ativo) ENTÃO (ligue a lâmpada)"</i>.
+            <strong>Estrutura da Linguagem IL (Instruction List)</strong><br>
+            O CLP processa as instruções sequencialmente de cima para baixo. A lógica básica consiste em: CARREGAR um estado de entrada, processar a LÓGICA BOOLEANA e ARMAZENAR o resultado em uma saída ou memória.
         </div>
 
-        <h3>1. Endereços (Quem é quem?)</h3>
+        <h3>1. Endereçamento e Variáveis</h3>
         <ul>
-            <li><strong>I0.0 a I0.7:</strong> Entradas (Botões, Sensores, Chaves).</li>
-            <li><strong>Q0.0 a Q0.7:</strong> Saídas (Lâmpadas, Motores, Semáforos).</li>
-            <li><strong>M0, M1...:</strong> Memórias (Guardam valor temporariamente, não existem no mundo físico).</li>
-            <li><strong>T1, T2...:</strong> Temporizadores (TON, TOFF, RTO).</li>
-            <li><strong>C1, C2...:</strong> Contadores (CTU, CTD).</li>
+            <li><strong>I0.0 a I0.7:</strong> Entradas físicas (Sinais de campo).</li>
+            <li><strong>Q0.0 a Q0.7:</strong> Saídas físicas (Atuadores).</li>
+            <li><strong>M0, M1...:</strong> Memórias internas (Bits auxiliares para armazenamento temporário).</li>
+            <li><strong>T1, T2...:</strong> Temporizadores (Controle de tempo).</li>
+            <li><strong>C1, C2...:</strong> Contadores (Controle de pulsos/eventos).</li>
         </ul>
 
-        <h3>2. Comandos Básicos (Lógica)</h3>
+        <h3>2. Instruções Lógicas Básicas</h3>
         <ul>
-            <li><strong>LD (Load):</strong> Começa uma nova lógica ("Se..."). Contato Aberto <code>[ ]</code>.</li>
-            <li><strong>LDN (Load Not):</strong> Começa invertido ("Se NÃO..."). Contato Fechado <code>[/]</code>.</li>
-            <li><strong>AND:</strong> Adiciona uma condição em série ("E...").</li>
-            <li><strong>OR:</strong> Cria uma alternativa em paralelo ("OU...").</li>
-            <li><strong>ST (Store):</strong> Finaliza enviando para uma saída normal <code>-( )-</code> ("Então ligue...").</li>
-            <li><strong>STN (Store Not):</strong> Bobina invertida <code>-(/)-</code>.</li>
-            <li><strong>N (Sufixo):</strong> Negação (Inverso). Ex: <code>LDN</code>, <code>ANDN</code>, <code>ORN</code>.</li>
+            <li><strong>LD / LDN:</strong> Inicia a linha lendo um contato Normalmente Aberto (LD) ou Fechado (LDN).</li>
+            <li><strong>AND / ANDN:</strong> Adiciona uma condição em SÉRIE (Lógica E).</li>
+            <li><strong>OR / ORN:</strong> Adiciona uma condição em PARALELO (Lógica OU).</li>
+            <li><strong>ST / STN:</strong> Escreve o resultado em uma bobina normal (ST) ou invertida (STN).</li>
         </ul>
         <div class='code-box'>
-            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Se apertar I0.0)<br>
-            ANDN I0.1 &nbsp;&nbsp;(E NÃO apertar I0.1)<br>
-            ST Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Então ligue Q0.0)
+            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Carrega o estado da entrada I0.0)</span><br>
+            OR I0.1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Lógica OU com a entrada I0.1)</span><br>
+            ANDN I0.2 &nbsp;&nbsp;&nbsp;<span class='comment'>(Lógica E com a entrada I0.2 negada)</span><br>
+            ST Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Armazena o resultado na saída Q0.0)</span>
         </div>
 
-        <h3>3. Temporizadores Comuns (TON / TOFF)</h3>
-        <p>Usados para esperar um tempo antes de ligar ou desligar. <em>Zeram automaticamente se perderem energia.</em></p>
+        <h3>3. Temporizadores (TON e TOFF)</h3>
+        <p>Instruções baseadas em tempo. <em>O acumulador zera automaticamente se a condição for a falso.</em></p>
         <ul>
-            <li><strong>Configurar:</strong> <code>TON T1,20</code> (Cria T1 com 20 décimos de segundo = 2s).</li>
-            <li><strong>Ativar:</strong> Use <code>ST T1</code> para iniciar a contagem.</li>
-            <li><strong>Ler:</strong> Use <code>LD T1</code> para saber se o tempo acabou.</li>
+            <li><strong>TON (Timer On-Delay):</strong> Atraso na energização. A saída ativa ao fim do tempo.</li>
+            <li><strong>TOFF (Timer Off-Delay):</strong> Atraso na desenergização. O tempo conta para desligar.</li>
         </ul>
         <div class='code-box'>
-            TON T1,20 &nbsp;&nbsp;(Configura T1 para 2 seg)<br>
-            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Se botão I0.0...)<br>
-            ST T1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Inicia contagem do T1)<br>
-            LD T1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Se T1 acabou a contagem...)<br>
-            ST Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Ligue Q0.0)
+            TON T1,20 &nbsp;&nbsp;&nbsp;<span class='comment'>(Define T1 com preset de 2 segundos)</span><br>
+            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Condição de habilitação)</span><br>
+            ST T1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Energiza o temporizador T1)</span><br>
+            LD T1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Lê o bit de conclusão do T1)</span><br>
+            ST Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Aciona Q0.0 após o atraso de 2s)</span>
         </div>
 
         <h3>4. Temporizador Retentivo (RTO)</h3>
-        <p>Funciona como o TON, mas <strong>CONGELA o tempo acumulado</strong> se a linha for desenergizada (não zera sozinho, só via comando <code>RES</code>).</p>
+        <p>Funciona de forma similar ao TON, porém <strong>retém o valor acumulado</strong> quando a linha de habilitação vai a falso. Requer a instrução <code>RES</code> para ser zerado.</p>
         <div class='code-box'>
-            RTO T1,50 &nbsp;&nbsp;(Configura T1 Retentivo para 5 seg)<br>
-            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Se botão I0.0...)<br>
-            ST T1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Conta tempo e retém se soltar)<br>
-            LD T1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Se T1 atingiu 50...)<br>
-            ST Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Ligue Q0.0)
+            RTO T2,50 &nbsp;&nbsp;&nbsp;<span class='comment'>(Define T2 Retentivo para 5 segundos)</span><br>
+            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Condição de habilitação)</span><br>
+            ST T2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Conta e retém o valor se I0.0 for a zero)</span><br>
+            LD T2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Lê o bit de conclusão do T2)</span><br>
+            ST Q0.1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Aciona Q0.1 ao atingir 5s)</span>
         </div>
 
-        <h3>5. Contadores (CTU / CTD)</h3>
-        <p>Contam quantas vezes um evento ocorreu.</p>
-        <ul>
-            <li><strong>Configurar:</strong> <code>CTU C1,3</code> (Conta até 3 para ativar).</li>
-            <li><strong>Contar:</strong> Use <code>ST C1</code> para enviar o pulso de contagem.</li>
-            <li><strong>Ler:</strong> Use <code>LD C1</code> para saber se atingiu a meta.</li>
-        </ul>
+        <h3>5. Contadores Bidirecionais (CTU e CTD)</h3>
+        <p>Para criar um contador bidirecional (Up/Down), <strong>utilize a mesma variável de memória</strong> (ex: C1) para as instruções de incremento e decremento.</p>
         <div class='code-box'>
-            CTU C1,3 &nbsp;&nbsp;&nbsp;(Meta: 3 pulsos)<br>
-            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Ler botão)<br>
-            ST C1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Envia pulso para C1)<br>
-            LD C1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Se C1 chegou em 3...)<br>
-            ST Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Ligue a saída)
+            CTU C1,3 &nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Define C1 com preset 3. Prepara incremento)</span><br>
+            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Sinal de pulso crescente)</span><br>
+            ST C1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Incrementa +1 no acumulador de C1)</span><br>
+            <br>
+            CTD C1,3 &nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Mesma variável C1. Prepara decremento)</span><br>
+            LD I0.1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Sinal de pulso decrescente)</span><br>
+            ST C1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Decrementa -1 no acumulador de C1)</span><br>
+            <br>
+            LD C1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Lê o bit de conclusão de C1)</span><br>
+            ST Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Aciona Q0.0 se o acumulador for >= 3)</span>
         </div>
 
         <h3>6. Instrução de Reset (RES)</h3>
-        <p>Zera forçadamente o acumulador de Contadores (<code>C</code>) e Temporizadores (<code>T</code> / <code>RTO</code>):</p>
+        <p>Instrução utilizada para zerar forçadamente o acumulador de Contadores (<code>C</code>) e Temporizadores Retentivos (<code>RTO</code>).</p>
         <div class='code-box'>
-            LD I0.1 &nbsp;&nbsp;&nbsp;&nbsp;(Se apertar o botão de Reset)<br>
-            RES T1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Zera o cronômetro do RTO T1)<br>
-            LD I0.2 &nbsp;&nbsp;&nbsp;&nbsp;(Se apertar botão de Zerar Peças)<br>
-            RES C1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Zera a contagem do contador C1)
+            LD I0.2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Condição de acionamento do Reset)</span><br>
+            RES C1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Zera o acumulador do contador C1)</span><br>
+            RES T2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Zera o acumulador do temporizador T2)</span>
         </div>
 
-        <h3>7. Bobinas Latch -(L)- (Set) e Unlatch -(U)- (Reset)</h3>
-        <p>Permitem ligar e manter travado com um pulso, sem precisar de circuito de selo:</p>
-        <ul>
-            <li><strong>S (Set / Latch):</strong> Bobina <code>-( L )-</code>. Liga e <strong>mantém ligado</strong> mesmo após soltar o botão.</li>
-            <li><strong>R (Reset / Unlatch):</strong> Bobina <code>-( U )-</code>. Desliga forçadamente a variável.</li>
-        </ul>
+        <h3>7. Instruções de Retenção: Latch -(L)- e Unlatch -(U)-</h3>
+        <p>Um pulso em <strong>S (Set/Latch)</strong> ativa e retém a saída. Um pulso em <strong>R (Reset/Unlatch)</strong> desativa a saída forçadamente.</p>
         <div class='code-box'>
-            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Botão Liga)<br>
-            S Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Trava a saída Q0.0 ligada)<br>
-            LD I0.1 &nbsp;&nbsp;&nbsp;&nbsp;(Botão Desliga)<br>
-            R Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Destrava e desliga Q0.0)
+            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Pulso de acionamento)</span><br>
+            S Q0.2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Ativa e retém a saída Q0.2 em nível alto)</span><br>
+            <br>
+            LD I0.1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Pulso de desligamento)</span><br>
+            R Q0.2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Desativa a retenção da saída Q0.2)</span>
         </div>
 
-        <h3>8. Memória e Selo Clássico (Manter ligado)</h3>
-        <p>Como fazer um botão de campainha virar um interruptor usando a lógica tradicional de relés? Usamos memória e ramal paralelo!</p>
+        <h3>8. Circuito de Selo (Auto-retenção)</h3>
+        <p>Lógica de retenção utilizando ramal paralelo. Garante a desenergização automática da saída em caso de interrupção do circuito.</p>
         <div class='code-box'>
-            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Botão Liga)<br>
-            OR M0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(OU a memória já ligada)<br>
-            ANDN I0.1 &nbsp;&nbsp;(E o botão Desliga solto)<br>
-            ST M0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Salva na memória M0)<br>
-            LD M0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Lê a memória)<br>
-            ST Q0.0 &nbsp;&nbsp;&nbsp;&nbsp;(Liga a luz real)
+            LD I0.0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Contato de acionamento)</span><br>
+            OR M0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Contato de selo em paralelo)</span><br>
+            ANDN I0.1 &nbsp;&nbsp;&nbsp;<span class='comment'>(Contato de interrupção NF)</span><br>
+            ST M0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Bobina da memória auxiliar)</span><br>
+            <br>
+            LD M0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Lê a memória auxiliar)</span><br>
+            ST Q0.3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='comment'>(Aciona a saída física)</span>
         </div>
 
         <br>
         <div class="footer">
-            💻 <a href='https://github.com/Pedrofrac/Trabalho-Final-CLP/tree/main/examples/Batch'>Baixar Exemplos Batch</a> &nbsp;|&nbsp; 
-            💻 <a href='https://github.com/Pedrofrac/Trabalho-Final-CLP/tree/main/examples/Traffic-light'>Baixar Exemplos Traffic light</a>
+            💻 <a href='https://github.com/Pedrofrac/Trabalho-Final-CLP/tree/main/examples/Batch'>Acessar Diretório de Exemplos: Batch</a> &nbsp;|&nbsp; 
+            💻 <a href='https://github.com/Pedrofrac/Trabalho-Final-CLP/tree/main/examples/Traffic-light'>Acessar Diretório de Exemplos: Traffic Light</a>
         </div>
     </body>
     </html>
@@ -157,8 +152,8 @@ public class HelpPopUp {
         });
 
         JScrollPane scrollPane = new JScrollPane(editorPane);
-        scrollPane.setPreferredSize(new java.awt.Dimension(540, 520));
+        scrollPane.setPreferredSize(new java.awt.Dimension(580, 560));
 
-        JOptionPane.showMessageDialog(null, scrollPane, "Manual do Usuário - CLP", JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(null, scrollPane, "Manual Técnico de Programação - CLP", JOptionPane.PLAIN_MESSAGE);
     }
 }
