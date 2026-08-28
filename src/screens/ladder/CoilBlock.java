@@ -1,6 +1,8 @@
 package screens.ladder;
 
+import ilcompiler.memoryvariable.MemoryVariable;
 import java.awt.*;
+import java.util.Map;
 
 public class CoilBlock extends LadderBlock {
     private String coilMode; // "NORMAL", "COIL_NEG", "LATCH", "UNLATCH"
@@ -16,6 +18,33 @@ public class CoilBlock extends LadderBlock {
 
     @Override
     public boolean isOutput() { return true; } 
+
+    @Override
+    public void updateState(Map<String, Boolean> inputs, Map<String, Boolean> outputs, Map<String, MemoryVariable> memoryVariables) {
+        if (variableName == null || variableName.isEmpty() || variableName.equals("<???>")) {
+            this.isActive = false;
+            this.repaint();
+            return;
+        }
+
+        // 🔹 TRATAMENTO EXCLUSIVO DA BOBINA UNLATCH (U / R / RST):
+        // Ela é uma AÇÃO. Ela só acende se a linha (rung) dela conduzir energia até ela!
+        if ("UNLATCH".equals(this.coilMode) || "U".equals(this.coilMode) || "R".equals(this.coilMode) || "RST".equals(this.coilMode)) {
+            boolean powerReaching = false;
+            Container parent = getParent();
+            if (parent instanceof LadderRung) {
+                LadderRung rung = (LadderRung) parent;
+                int myIdx = rung.getIndexOfBlock(this);
+                powerReaching = rung.isPowerReachingIndex(myIdx);
+            }
+            this.isActive = powerReaching;
+            this.repaint();
+            return;
+        }
+
+        // Para as demais bobinas (NORMAL, LATCH, COIL_NEG), segue o valor de saída
+        super.updateState(inputs, outputs, memoryVariables);
+    }
 
     @Override
     public String compileToIL(boolean isFirstElement) {
@@ -44,7 +73,7 @@ public class CoilBlock extends LadderBlock {
         
         g2.drawString(variableName, textX, 20);
 
-        // Bobina (Verde se 1, Branca se 0)
+        // Bobina (Verde se 1/Ativo, Branca se 0/Inativo)
         g2.setColor(isActive ? new Color(0, 255, 100) : Color.WHITE);
         g2.setStroke(new BasicStroke(3));
         g2.drawLine(0, centerY, 20, centerY); 
@@ -55,10 +84,10 @@ public class CoilBlock extends LadderBlock {
         // Simbologia interna
         if (coilMode.equals("COIL_NEG")) {
             g2.drawLine(20, centerY + 15, 60, centerY - 15);
-        } else if (coilMode.equals("LATCH") || coilMode.equals("L")) {
+        } else if (coilMode.equals("LATCH") || coilMode.equals("L") || coilMode.equals("SET")) {
             g2.setFont(new Font("Arial", Font.BOLD, 14));
             g2.drawString("L", 36, centerY + 5);
-        } else if (coilMode.equals("UNLATCH") || coilMode.equals("U")) {
+        } else if (coilMode.equals("UNLATCH") || coilMode.equals("U") || coilMode.equals("RST") || coilMode.equals("R")) {
             g2.setFont(new Font("Arial", Font.BOLD, 14));
             g2.drawString("U", 35, centerY + 5);
         }

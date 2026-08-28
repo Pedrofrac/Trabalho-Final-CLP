@@ -104,12 +104,8 @@ public class LadderRung extends JPanel {
         boolean power = true;
         for (int i = 0; i <= prevIndex; i++) {
             LadderBlock b = this.blocks.get(i);
-            if (b instanceof BoxBlock) {
-                power = b.isActive();
-            } else if (b instanceof CoilBlock) {
-                power = b.isActive();
-            } else if (b instanceof ParallelBlock) {
-                power = ((ParallelBlock) b).isFullyActive();
+            if (b instanceof ParallelBlock) {
+                power = power && ((ParallelBlock) b).isFullyActive();
             } else {
                 power = power && b.isActive();
             }
@@ -270,8 +266,8 @@ public class LadderRung extends JPanel {
         else if (tool.equals("NC")) newBlock = new ContactBlock("<???>", false);
         else if (tool.equals("COIL")) newBlock = new CoilBlock("<???>", "NORMAL");
         else if (tool.equals("COIL_NEG")) newBlock = new CoilBlock("<???>", "COIL_NEG");
-        else if (tool.equals("LATCH") || tool.equals("L")) newBlock = new CoilBlock("<???>", "LATCH");
-        else if (tool.equals("UNLATCH") || tool.equals("U")) newBlock = new CoilBlock("<???>", "UNLATCH");
+        else if (tool.equals("LATCH") || tool.equals("L") || tool.equals("SET")) newBlock = new CoilBlock("<???>", "LATCH");
+        else if (tool.equals("UNLATCH") || tool.equals("U") || tool.equals("RST")) newBlock = new CoilBlock("<???>", "UNLATCH");
         else if (tool.equals("TON") || tool.equals("TOFF") || tool.equals("RTO") || tool.equals("CTU") || tool.equals("CTD")) {
             newBlock = new BoxBlock(tool, "<???>", "?");
         } else if (tool.equals("RES")) {
