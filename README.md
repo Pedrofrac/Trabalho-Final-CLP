@@ -122,3 +122,11 @@ cd Trabalho-Final-CLP
 * **Norma IEC 61131-3:** Padrão internacional para linguagens de programação de Controladores Lógicos Programáveis.
 * **Inspiração Visual:** Software *LogixPro 500 Simulator* e *Siemens TIA Portal*.
 * **Repositório do Projeto:** [GitHub - Pedrofrac/Trabalho-Final-CLP](https://github.com/Pedrofrac/Trabalho-Final-CLP)
+
+---
+
+## 📜 Registro de Software (INPI / IFTM)
+- **Título:** Simulador Didático de CLP - Módulo Visual de Diagrama Ladder
+- **Instituição:** Instituto Federal do Triângulo Mineiro (IFTM) - Campus Uberaba Parque Tecnológico
+- **Autores:** Prof. Me. Robson Borges Rodrigues (Orientador) e Pedro Franco de Camargo
+- **Norma:** IEC 61131-3
